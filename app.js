@@ -2,53 +2,8 @@ var express=require("express");
 var passport=require("passport");
 var LocalStrategy = require('passport-local').Strategy;
 var flash = require('connect-flash');
-/*
- * TODO: Put this in some kind of data module
- */
-var users = [
-	     { id: 1, username: 'kevin', password: 'secret', email: 'bob@example.com' }
-	     , { id: 2, username: 'peter', password: 'birthday', email: 'joe@example.com' }
-	     ];
+var dao=require('./dao-mongo');
 
-function findById(id, fn) {
-    var idx = id - 1;
-    if (users[idx]) {
-	fn(null, users[idx]);
-    } else {
-	fn(new Error('User ' + id + ' does not exist'));
-    }
-}
-
-function findByUsername(username, fn) {
-    for (var i = 0, len = users.length; i < len; i++) {
-	var user = users[i];
-	if (user.username === username) {
-	    return fn(null, user);
-	}
-    }
-    return fn(null, null);
-}
-
-function getConnections(user){
-    return ["peter"];
-}
-
-function getRecentMessages(user){
-    return [{
-	    from: "peter",
-		text:"Reading some XMPP specs",
-		date:"2013-08-01"
-	},{
-	    from: "kevin",
-		text:"Too little time",
-		date:"2013-08-01"
-	},{
-	    from: "peter",
-		  text: "@kevin Tell me about it",
-		  date:"2013-08-02"
-	}];
-    
-}
 
 var app=express();
 
@@ -70,8 +25,14 @@ app.configure(function(){
     });
 
 app.get('/', function(req, res){
-	res.render('index', { user: req.user,connections:getConnections(req.user),messages:getRecentMessages(req.user) });
+	dao.getConnections(req.user,function(error,connections){
+		res.render('index', { 
+			user: req.user,
+			connections:connections,
+			    messages:dao.getRecentMessages(req.user) });
+	    });
     });
+	    
 
 app.get('/account', ensureAuthenticated, function(req, res){
 	res.render('account', { user: req.user });
@@ -92,7 +53,7 @@ passport.serializeUser(function(user, done) {
     });
 
 passport.deserializeUser(function(id, done) {
-	findById(id, function (err, user) {
+	dao.findById(id, function (err, user) {
 		done(err, user);
 	    });
     });
@@ -106,7 +67,7 @@ passport.use(new LocalStrategy(
 					   // username, or the password is not correct, set the user to `false` to
 					   // indicate failure and set a flash message.  Otherwise, return the
 					   // authenticated `user`.
-					   findByUsername(username, function(err, user) {
+					   dao.findByUsername(username, function(err, user) {
 						   if (err) { return done(err); }
 						   if (!user) { return done(null, false, { message: 'Unknown user ' + username }); }
 						   if (user.password != password) { return done(null, false, { message: 'Invalid password' }); }
