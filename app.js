@@ -6,8 +6,8 @@ var flash = require('connect-flash');
  * TODO: Put this in some kind of data module
  */
 var users = [
-	     { id: 1, username: 'bob', password: 'secret', email: 'bob@example.com' }
-	     , { id: 2, username: 'joe', password: 'birthday', email: 'joe@example.com' }
+	     { id: 1, username: 'kevin', password: 'secret', email: 'bob@example.com' }
+	     , { id: 2, username: 'peter', password: 'birthday', email: 'joe@example.com' }
 	     ];
 
 function findById(id, fn) {
@@ -27,6 +27,27 @@ function findByUsername(username, fn) {
 	}
     }
     return fn(null, null);
+}
+
+function getConnections(user){
+    return ["peter"];
+}
+
+function getRecentMessages(user){
+    return [{
+	    from: "peter",
+		text:"Reading some XMPP specs",
+		date:"2013-08-01"
+	},{
+	    from: "kevin",
+		text:"Too little time",
+		date:"2013-08-01"
+	},{
+	    from: "peter",
+		  text: "@kevin Tell me about it",
+		  date:"2013-08-02"
+	}];
+    
 }
 
 var app=express();
@@ -49,7 +70,7 @@ app.configure(function(){
     });
 
 app.get('/', function(req, res){
-	res.render('index', { user: req.user });
+	res.render('index', { user: req.user,connections:getConnections(req.user),messages:getRecentMessages(req.user) });
     });
 
 app.get('/account', ensureAuthenticated, function(req, res){

@@ -1,5 +1,26 @@
 <% if (!user) { %>
    <h2>Welcome! Please log in.</h2>
 <% } else { %>
-   <h2>Hello, <%= user.username %>.</h2>
+   <p>Logged in as <%= user.username %>.</p>
+   <h2>Contacts</h2>
+   <% for (var i=0; i<connections.length; i++){%>
+      <li><%=connections[i]%> </li>
+   <% } %>
+   <form>
+     <input type='text'/>
+     <input type='submit' value='Add Contact'/>
+   </form>
+   <h2>Messages</h2>
+   <form>
+   Post Message:<br/>
+   	<input type="text"/>
+        <input type="submit" value="Post"/>
+   </form>
+   <% for (var i=0; i<messages.length; i++){%>
+      <div class="message">
+         <%=messages[i].from%>: <%=messages[i].text %><br/>
+      	 <div class="date"><%=messages[i].date%></div>
+      </div>
+   <% } %>
+   
 <% } %>
