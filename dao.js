@@ -26,8 +26,9 @@ exports.getConnections=function(user,callback){
     callback(null,["peter"]);
 }
 
-exports.getRecentMessages=function(user){
-    return [{
+
+exports.getRecentMessages=function(user,callback){
+    callback(null,[{
 	    from: "peter",
 		text:"Reading some XMPP specs",
 		date:"2013-08-01"
@@ -39,6 +40,6 @@ exports.getRecentMessages=function(user){
 	    from: "peter",
 		  text: "@kevin Tell me about it",
 		  date:"2013-08-02"
-	}];
+	    }]);
     
 }

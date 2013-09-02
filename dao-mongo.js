@@ -1,5 +1,5 @@
 var databaseUrl="localhost/nodechesir";
-var collections=["followers"];
+var collections=["followers","messages"];
 var db=require("mongojs").connect(databaseUrl,collections);
 
 
@@ -28,26 +28,26 @@ exports.findByUsername=function(username, fn) {
 }
 
 exports.getConnections=function(user,callback){
-    db.followers.findOne({"name":"kevin"},function(err,followers){
-	    console.log("FOLLOWERS:");
-	    console.log(followers.follows);
-	    callback(null,followers.follows);
-	});
-}
+    if(user){
+    db.followers.findOne({"name":user.username},function(err,followers){
+	    if(followers){
+		callback(null,followers.follows);		
+	    }else{
+		callback(null,[]);
+	    }
 
-exports.getRecentMessages=function(user){
-    return [{
-	    from: "peter",
-		text:"Reading some XMPP specs",
-		date:"2013-08-01"
-	},{
-	    from: "kevin",
-		text:"Too little time",
-		date:"2013-08-01"
-	},{
-	    from: "peter",
-		  text: "@kevin Tell me about it",
-		  date:"2013-08-02"
-	}];
-    
+	});
+    }
+};
+
+exports.getRecentMessages=function(user,callback){
+    if(user){
+	exports.getConnections(user,function(err,followers){
+	    var from=followers;
+	    from.push(user.username);
+	    db.messages.find({from:{$in:from}},function(err,messages){
+		    callback(null,messages);
+		});
+	    });
+    }
 }

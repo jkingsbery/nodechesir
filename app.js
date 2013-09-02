@@ -24,13 +24,42 @@ app.configure(function(){
 	app.use(express.static(__dirname + '/public'));
     });
 
-app.get('/', function(req, res){
+app.get('/', ensureAuthenticated, function(req, res){
+	var result_connections=null;
+	var result_messages=null;
 	dao.getConnections(req.user,function(error,connections){
-		res.render('index', { 
+		result_connections=connections;
+		if(result_messages && result_connections){
+		    res.render('index', { 
 			user: req.user,
-			connections:connections,
-			    messages:dao.getRecentMessages(req.user) });
+			connections:result_connections,
+			messages:result_messages
+				});
+		}
 	    });
+	dao.getRecentMessages(req.user,function(error,messages){
+		result_messages=messages;
+		if(result_messages && result_connections){
+		    res.render('index', { 
+			user: req.user,
+			connections:result_connections,
+			messages:result_messages
+				});
+		}
+	    });
+
+
+		/*	
+	dao.getRecentMessages(req.user,function(error,connections){
+		result_messages=messages;
+		if(result_messages && result_connections){
+		    res.render('index', { 
+			user: req.user,
+			connections:result_connections,
+			messages:result_messages
+		    });
+		}
+		});*/
     });
 	    
 
@@ -47,6 +76,11 @@ app.post('/login',
 	 function(req, res) {
 	     res.redirect('/');
 	 });
+
+app.get('/logout', function(req, res){
+	req.logout();
+	res.redirect('/');
+    });
 
 passport.serializeUser(function(user, done) {
 	done(null, user.id);
